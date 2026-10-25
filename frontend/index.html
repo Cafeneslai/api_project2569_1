@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Hub — ระบบข้อมูลสูตรอาหารและวิเคราะห์โภชนาการ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <span class="brand-icon">🍳</span>
+        <div>
+          <h1 class="brand-title">Recipe Hub</h1>
+          <p class="brand-subtitle">ระบบข้อมูลสูตรอาหาร & วิเคราะห์โภชนาการ (โครงงานระยะที่ 3)</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="http://localhost:3000/api-docs" target="_blank" class="btn-swagger" id="btn-swagger" title="เปิดเอกสาร Swagger UI">
+          <span>📖 Swagger API Docs</span>
+        </a>
+        <button class="btn btn-primary" id="btn-open-add-modal">
+          <span>+ เพิ่มสูตรอาหารใหม่</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <!-- Controls Section: Search & Category Filter -->
+    <section class="controls-card">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="input-search" placeholder="ค้นหาชื่อสูตรอาหาร... (เช่น ต้มยำกุ้ง, ผัดไทย)" />
+        <button class="btn btn-secondary btn-sm" id="btn-search-clear" style="display:none;">ล้าง</button>
+      </div>
+      <div class="filter-group">
+        <label for="select-category" class="filter-label">หมวดหมู่:</label>
+        <select id="select-category" class="custom-select">
+          <option value="">ทั้งหมดทุกหมวดหมู่</option>
+        </select>
+        <button class="btn btn-secondary" id="btn-refresh" title="โหลดข้อมูลใหม่">
+          <span>🔄 รีเฟรช</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Global Alert / Status -->
+    <div id="status-container" class="status-container" style="display:none;">
+      <div id="status-alert" class="status-alert"></div>
+    </div>
+
+    <!-- Recipes List Section -->
+    <section class="recipes-section">
+      <div class="section-header">
+        <h2 class="section-title">รายการสูตรอาหารทั้งหมด</h2>
+        <span id="recipe-count-badge" class="badge badge-neutral">กำลังโหลด...</span>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-spinner" class="loading-container">
+        <div class="spinner"></div>
+        <p class="loading-text">กำลังโหลดข้อมูลสูตรอาหารจากเซิร์ฟเวอร์...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-container" class="error-container" style="display:none;">
+        <div class="error-icon">⚠️</div>
+        <h3 id="error-title" class="error-title">เกิดข้อผิดพลาดในการโหลดข้อมูล</h3>
+        <p id="error-desc" class="error-desc"></p>
+        <button class="btn btn-primary btn-retry" id="btn-retry-load">ลองใหม่อีกครั้ง</button>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-container" class="empty-container" style="display:none;">
+        <div class="empty-icon">🍲</div>
+        <h3>ไม่พบสูตรอาหารที่ค้นหา</h3>
+        <p>ลองเปลี่ยนคำค้นหา หรือกดเพิ่มสูตรอาหารใหม่ลงในระบบ</p>
+      </div>
+
+      <!-- Recipe Cards Grid -->
+      <div id="recipes-grid" class="recipes-grid"></div>
+    </section>
+  </main>
+
+  <!-- Modal: View Recipe Detail, Nutrition & Reviews -->
+  <div id="modal-detail" class="modal-backdrop" style="display:none;">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <div>
+          <span id="detail-category-badge" class="badge badge-category">หมวดหมู่</span>
+          <h2 id="detail-name" class="modal-title">ชื่อสูตรอาหาร</h2>
+        </div>
+        <button class="btn-close" id="btn-close-detail" title="ปิดหน้าต่าง">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="recipe-meta-row">
+          <div class="meta-item">
+            <span class="meta-icon">⏱️</span>
+            <div>
+              <div class="meta-label">เวลาที่ใช้ปรุง</div>
+              <div id="detail-cook-time" class="meta-value">30 นาที</div>
+            </div>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon">🆔</span>
+            <div>
+              <div class="meta-label">รหัสสูตรอาหาร</div>
+              <div id="detail-id" class="meta-value">#1</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ingredients Section -->
+        <div class="detail-section">
+          <h3 class="detail-subtitle">🥗 วัตถุดิบและส่วนผสม</h3>
+          <div id="detail-ingredients" class="ingredients-box"></div>
+        </div>
+
+        <!-- Nutrition & Resilience Section (W11 External API) -->
+        <div class="detail-section nutrition-section">
+          <div class="nutrition-header">
+            <div>
+              <h3 class="detail-subtitle">⚡ คุณค่าทางโภชนาการ (External API Integration)</h3>
+              <p class="nutrition-caption">ดึงข้อมูลจริงจาก Nutrition API พร้อมระบบ Retry/Timeout/Fallback</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btn-refresh-nutrition">🔄 โหลดโภชนาการใหม่</button>
+          </div>
+
+          <div id="nutrition-loading" class="nutrition-loading" style="display:none;">
+            <div class="spinner-sm"></div>
+            <span>กำลังเชื่อมต่อ API ภายนอก...</span>
+          </div>
+
+          <div id="nutrition-card" class="nutrition-card">
+            <div class="nutrition-calorie-box">
+              <span class="cal-number" id="nutrition-calories">--</span>
+              <span class="cal-unit">แคลอรี่ (kcal)</span>
+            </div>
+            <div class="nutrition-info-box">
+              <div class="nutrition-status-row">
+                <span class="label">สถานะการเชื่อมต่อ:</span>
+                <span id="nutrition-status-badge" class="badge badge-success">พร้อมใช้งาน</span>
+              </div>
+              <div class="nutrition-status-row">
+                <span class="label">แหล่งข้อมูล:</span>
+                <span id="nutrition-source-badge" class="badge badge-neutral">External API</span>
+              </div>
+              <div id="nutrition-message" class="nutrition-msg"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews & Rating Section (W13 Microservices) -->
+        <div class="detail-section reviews-section">
+          <div class="reviews-header">
+            <h3 class="detail-subtitle">💬 รีวิวและความคิดเห็นจากผู้ใช้</h3>
+            <span id="review-count-badge" class="badge badge-neutral">0 รีวิว</span>
+          </div>
+
+          <!-- Add Review Form -->
+          <form id="form-add-review" class="form-review-card">
+            <h4 class="form-review-title">เขียนรีวิวและให้คะแนนสูตรนี้</h4>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label for="review-author" class="form-label">ชื่อผู้รีวิว <span class="req">*</span></label>
+                <input type="text" id="review-author" class="form-control" placeholder="เช่น เชฟกระทะเหล็ก" required />
+              </div>
+              <div class="form-group">
+                <label for="review-rating" class="form-label">คะแนนความพึงพอใจ <span class="req">*</span></label>
+                <select id="review-rating" class="form-control" required>
+                  <option value="5">⭐⭐⭐⭐⭐ (5 ดาว - ดีเยี่ยม)</option>
+                  <option value="4">⭐⭐⭐⭐ (4 ดาว - อร่อยมาก)</option>
+                  <option value="3">⭐⭐⭐ (3 ดาว - พอใช้)</option>
+                  <option value="2">⭐⭐ (2 ดาว - ต้องปรับปรุง)</option>
+                  <option value="1">⭐ (1 ดาว - ไม่ประทับใจ)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="review-comment" class="form-label">ความคิดเห็น / ข้อเสนอแนะ</label>
+              <textarea id="review-comment" class="form-control" rows="2" placeholder="รสชาติเป็นอย่างไร ทำตามยากไหม..."></textarea>
+            </div>
+            <div class="form-footer">
+              <button type="submit" class="btn btn-primary btn-sm" id="btn-submit-review">
+                <span>ส่งความคิดเห็น</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Reviews List -->
+          <div id="reviews-list-container" class="reviews-list-container">
+            <div id="reviews-empty" class="reviews-empty">ยังไม่มีรีวิวสำหรับสูตรนี้ เป็นคนแรกที่รีวิวเลย!</div>
+            <div id="reviews-list" class="reviews-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-secondary btn-sm" id="btn-edit-from-detail">✏️ แก้ไขสูตรนี้</button>
+          <button class="btn btn-danger-outline btn-sm" id="btn-delete-from-detail">🗑️ ลบสูตรนี้</button>
+        </div>
+        <button class="btn btn-secondary" id="btn-modal-close-bottom">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create New Recipe (POST /api/v1/recipes) -->
+  <div id="modal-add-recipe" class="modal-backdrop" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">✨ เพิ่มสูตรอาหารใหม่</h2>
+        <button class="btn-close" id="btn-close-add-modal">&times;</button>
+      </div>
+      <form id="form-create-recipe">
+        <div class="modal-body">
+          <div id="form-error-alert" class="alert alert-danger" style="display:none;"></div>
+          
+          <div class="form-group">
+            <label for="input-recipe-name" class="form-label">ชื่อสูตรอาหาร <span class="req">*</span></label>
+            <input type="text" id="input-recipe-name" class="form-control" placeholder="เช่น แกงมัสมั่นไก่, ผัดกะเพราหมูกรอบ" required />
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="select-new-category" class="form-label">หมวดหมู่อาหาร <span class="req">*</span></label>
+              <select id="select-new-category" class="form-control" required>
+                <option value="">-- เลือกหมวดหมู่ --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-cook-time" class="form-label">เวลาที่ใช้ปรุง (นาที) <span class="req">*</span></label>
+              <input type="number" id="input-cook-time" class="form-control" min="1" max="1440" placeholder="เช่น 25" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-ingredients" class="form-label">วัตถุดิบและส่วนผสม <span class="req">*</span></label>
+            <textarea id="input-ingredients" class="form-control" rows="4" placeholder="ระบุส่วนผสม คั่นด้วยเครื่องหมายจุลภาค เช่น กุ้ง 200 กรัม, ตะไคร้ 2 ต้น, ใบมะกรูด..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-create">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create">
+            <span>บันทึกสูตรอาหาร</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Recipe (PUT /api/v1/recipes/:id) -->
+  <div id="modal-edit-recipe" class="modal-backdrop" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">✏️ แก้ไขสูตรอาหาร</h2>
+        <button class="btn-close" id="btn-close-edit-modal">&times;</button>
+      </div>
+      <form id="form-edit-recipe">
+        <input type="hidden" id="input-edit-id" />
+        <div class="modal-body">
+          <div id="edit-form-error-alert" class="alert alert-danger" style="display:none;"></div>
+          
+          <div class="form-group">
+            <label for="input-edit-name" class="form-label">ชื่อสูตรอาหาร <span class="req">*</span></label>
+            <input type="text" id="input-edit-name" class="form-control" placeholder="เช่น แกงมัสมั่นไก่" required />
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="select-edit-category" class="form-label">หมวดหมู่อาหาร <span class="req">*</span></label>
+              <select id="select-edit-category" class="form-control" required>
+                <option value="">-- เลือกหมวดหมู่ --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="input-edit-cook-time" class="form-label">เวลาที่ใช้ปรุง (นาที) <span class="req">*</span></label>
+              <input type="number" id="input-edit-cook-time" class="form-control" min="1" max="1440" placeholder="เช่น 25" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-edit-ingredients" class="form-label">วัตถุดิบและส่วนผสม <span class="req">*</span></label>
+            <textarea id="input-edit-ingredients" class="form-control" rows="4" placeholder="ระบุส่วนผสม คั่นด้วยเครื่องหมายจุลภาค..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-edit">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-edit">
+            <span>บันทึกการแก้ไข</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

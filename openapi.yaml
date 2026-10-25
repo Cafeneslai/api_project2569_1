@@ -1,0 +1,539 @@
+openapi: 3.0.0
+info:
+  title: Recipe Information System API
+  description: >-
+    ระบบข้อมูลสูตรอาหาร (Recipe Information System) - API รวมฉบับสมบูรณ์สำหรับโครงงานระยะที่ 3
+    ครอบคลุมระบบจัดการสูตรอาหาร, หมวดหมู่, การวิเคราะห์โภชนาการ (External API Integration with Resilience)
+    และระบบรีวิว/เรตติ้ง (Review & Rating Service จากสัปดาห์ที่ 13)
+  version: 3.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Integrated Local Server (Port 3000)
+
+paths:
+  /recipes:
+    get:
+      summary: Get all recipes
+      description: ดึงรายการสูตรอาหารทั้งหมด พร้อมข้อมูลหมวดหมู่ (กรองด้วย category_id และค้นหาด้วย search ได้พร้อมกัน)
+      parameters:
+        - name: category_id
+          in: query
+          required: false
+          description: กรองตามรหัสหมวดหมู่
+          schema:
+            type: integer
+            example: 1
+        - name: search
+          in: query
+          required: false
+          description: ค้นหาคำในชื่อสูตรอาหาร (LIKE %search%)
+          schema:
+            type: string
+            example: "ผัด"
+      responses:
+        '200':
+          description: ดึงข้อมูลสูตรอาหารสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ดึงข้อมูลสูตรอาหารสำเร็จ"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecipeListItem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new recipe
+      description: เพิ่มสูตรอาหารใหม่ลงในฐานข้อมูล
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '201':
+          description: สร้างสูตรอาหารสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "สร้างสูตรอาหารสำเร็จ"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+        '400':
+          description: Bad Request (ข้อมูลไม่ครบถ้วน)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes/{id}:
+    get:
+      summary: Get recipe by ID
+      description: ดึงรายละเอียดของสูตรอาหารที่ระบุตาม ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสสูตรอาหาร
+      responses:
+        '200':
+          description: ดึงข้อมูลสูตรอาหารสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ดึงข้อมูลสูตรอาหารสำเร็จ"
+                  data:
+                    $ref: '#/components/schemas/RecipeDetail'
+        '404':
+          description: ไม่พบสูตรอาหาร (Recipe not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update a recipe
+      description: แก้ไขข้อมูลของสูตรอาหารตาม ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสสูตรอาหาร
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeInput'
+      responses:
+        '200':
+          description: อัปเดตสูตรอาหารสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "อัปเดตสูตรอาหารสำเร็จ"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a recipe
+      description: ลบสูตรอาหารออกจากระบบ (และลบรีวิวที่เกี่ยวข้องอัตโนมัติ)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสสูตรอาหาร
+      responses:
+        '200':
+          description: ลบสูตรอาหารสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ลบสูตรอาหารสำเร็จ"
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories:
+    get:
+      summary: Get all categories
+      description: ดึงรายการหมวดหมู่อาหารทั้งหมด
+      responses:
+        '200':
+          description: ดึงข้อมูลหมวดหมู่สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ดึงข้อมูลหมวดหมู่สำเร็จ"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes/{id}/nutrition:
+    get:
+      summary: Get recipe nutrition info (External API Integration & Resilience)
+      description: >-
+        ดึงข้อมูลโภชนาการและแคลอรี่ของสูตรอาหาร โดยเชื่อมต่อกับ External Nutrition API
+        พร้อมกลไก Retry (2 ครั้ง), Timeout (3 วินาที) และ Fallback กรณีบริการภายนอกขัดข้อง
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสสูตรอาหาร
+      responses:
+        '200':
+          description: ดึงข้อมูลโภชนาการสำเร็จ (ทั้งกรณี Live API และ Fallback Mode)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NutritionResponse'
+        '404':
+          description: Recipe not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /recipes/{id}/reviews:
+    get:
+      summary: Get reviews for a recipe
+      description: ดึงรายการรีวิวและความคิดเห็นทั้งหมดของสูตรอาหารที่ระบุ
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสสูตรอาหาร
+      responses:
+        '200':
+          description: ดึงข้อมูลรีวิวสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ดึงข้อมูลรีวิวสำเร็จ"
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewItem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Add a review for a recipe
+      description: ส่งรีวิวและให้คะแนน (1-5 ดาว) สำหรับสูตรอาหาร
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสสูตรอาหาร
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewInput'
+      responses:
+        '201':
+          description: เพิ่มรีวิวสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "เพิ่มรีวิวสำเร็จ"
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+        '400':
+          description: Bad Request (คะแนนไม่ถูกต้องหรือข้อมูลไม่ครบถ้วน)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Recipe not found (ไม่พบสูตรอาหารที่ต้องการรีวิว)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /reviews/{id}:
+    delete:
+      summary: Delete a review
+      description: ลบความคิดเห็นหรือรีวิวที่ระบุตาม ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: รหัสรีวิว
+      responses:
+        '200':
+          description: ลบรีวิวสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ลบรีวิวสำเร็จ"
+        '404':
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    RecipeListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        category_id:
+          type: integer
+          example: 1
+        recipe_name:
+          type: string
+          example: "Tom Yum Goong"
+        category_name:
+          type: string
+          example: "ต้ม/แกง"
+        cook_time_minutes:
+          type: integer
+          example: 30
+
+    RecipeDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        category_id:
+          type: integer
+          example: 1
+        recipe_name:
+          type: string
+          example: "Tom Yum Goong"
+        category_name:
+          type: string
+          example: "ต้ม/แกง"
+        ingredients:
+          type: string
+          example: "กุ้งสด, ข่า, ตะไคร้, ใบมะกรูด, พริกขี้หนู, น้ำปลา, มะนาว, เห็ดฟาง"
+        cook_time_minutes:
+          type: integer
+          example: 30
+
+    RecipeInput:
+      type: object
+      required:
+        - category_id
+        - name
+        - ingredients
+        - cook_time_minutes
+      properties:
+        category_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Tom Yum Goong"
+        ingredients:
+          type: string
+          example: "กุ้งสด, ข่า, ตะไคร้, ใบมะกรูด, พริก, มะนาว"
+        cook_time_minutes:
+          type: integer
+          example: 30
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "ต้ม/แกง"
+
+    NutritionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "ดึงข้อมูลโภชนาการสำเร็จ"
+        recipe:
+          type: string
+          example: "Tom Yum Goong"
+        nutrition:
+          type: object
+          properties:
+            source:
+              type: string
+              enum: [external_api, fallback]
+              example: "external_api"
+            calories:
+              description: จำนวนแคลอรี่ หรือ "N/A" เมื่อใช้ข้อมูลสำรอง (fallback)
+              oneOf:
+                - type: integer
+                - type: string
+              example: 300
+            status:
+              type: string
+              enum: [success, success_no_data, fallback]
+              example: "success"
+            message:
+              type: string
+              description: มีเฉพาะกรณี fallback
+              example: "ไม่สามารถดึงข้อมูลโภชนาการได้ในขณะนี้ (External API is down)"
+
+    ReviewItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        recipe_id:
+          type: integer
+          example: 1
+        reviewer_name:
+          type: string
+          example: "เชฟกระทะเหล็ก"
+        rating:
+          type: integer
+          example: 5
+        comment:
+          type: string
+          example: "รสชาติกลมกล่อม ทำตามได้ง่ายมากครับ!"
+        created_at:
+          type: string
+          format: date-time
+
+    ReviewInput:
+      type: object
+      required:
+        - reviewer_name
+        - rating
+      properties:
+        reviewer_name:
+          type: string
+          example: "เชฟกระทะเหล็ก"
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          example: "รสชาติกลมกล่อม ทำตามได้ง่ายมากครับ!"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "รายละเอียดข้อผิดพลาด"

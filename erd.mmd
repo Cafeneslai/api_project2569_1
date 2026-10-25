@@ -1,0 +1,26 @@
+erDiagram
+    CATEGORIES {
+        int id PK "AUTO_INCREMENT"
+        varchar name "NOT NULL, UNIQUE"
+    }
+    
+    RECIPES {
+        int id PK "AUTO_INCREMENT"
+        int category_id FK "NOT NULL"
+        varchar name "NOT NULL"
+        text ingredients "NOT NULL"
+        int cook_time_minutes "NOT NULL"
+        timestamp created_at "DEFAULT CURRENT_TIMESTAMP"
+    }
+
+    REVIEWS {
+        int id PK "AUTO_INCREMENT"
+        int recipe_id FK "NOT NULL"
+        varchar reviewer_name "NOT NULL"
+        int rating "NOT NULL (1-5)"
+        text comment "NULL"
+        timestamp created_at "DEFAULT CURRENT_TIMESTAMP"
+    }
+
+    CATEGORIES ||--o{ RECIPES : "has many"
+    RECIPES ||--o{ REVIEWS : "has many"
