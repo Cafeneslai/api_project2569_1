@@ -1,9 +1,9 @@
 require("dotenv").config();
 const express = require("express");
-const pool = require("./db");
+const path = require("path");
+const pool = require("../db");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
-const path = require("path");
 const { getNutritionInfo } = require("./services/external-api");
 
 const app = express();
@@ -20,7 +20,7 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   );
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
@@ -96,12 +96,14 @@ app.get("/api/v1/recipes/:id", async (req, res) => {
       JOIN categories ON recipes.category_id = categories.id
       WHERE recipes.id = ?
     `,
-      [id]
+      [id],
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: { message: "Recipe not found" } });
     }
-    res.status(200).json({ message: "ดึงข้อมูลสูตรอาหารสำเร็จ", data: rows[0] });
+    res
+      .status(200)
+      .json({ message: "ดึงข้อมูลสูตรอาหารสำเร็จ", data: rows[0] });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: { message: "Internal Server Error" } });
@@ -122,7 +124,7 @@ app.post("/api/v1/recipes", async (req, res) => {
       INSERT INTO recipes (category_id, name, ingredients, cook_time_minutes)
       VALUES (?, ?, ?, ?)
     `,
-      [category_id, name, ingredients, cook_time_minutes]
+      [category_id, name, ingredients, cook_time_minutes],
     );
     res
       .status(201)
@@ -149,7 +151,7 @@ app.put("/api/v1/recipes/:id", async (req, res) => {
       SET category_id = ?, name = ?, ingredients = ?, cook_time_minutes = ?
       WHERE id = ?
     `,
-      [category_id, name, ingredients, cook_time_minutes, id]
+      [category_id, name, ingredients, cook_time_minutes, id],
     );
 
     if (result.affectedRows === 0) {
@@ -200,7 +202,9 @@ app.get("/api/v1/categories", async (req, res) => {
 app.get("/api/v1/recipes/:id/nutrition", async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await pool.query("SELECT name FROM recipes WHERE id = ?", [id]);
+    const [rows] = await pool.query("SELECT name FROM recipes WHERE id = ?", [
+      id,
+    ]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: { message: "Recipe not found" } });
@@ -235,7 +239,7 @@ app.get("/api/v1/recipes/:id/reviews", async (req, res) => {
       WHERE recipe_id = ? 
       ORDER BY created_at DESC
     `,
-      [id]
+      [id],
     );
     res.status(200).json({ message: "ดึงข้อมูลรีวิวสำเร็จ", data: rows });
   } catch (error) {
@@ -260,7 +264,9 @@ app.post("/api/v1/recipes/:id/reviews", async (req, res) => {
     }
 
     // ตรวจสอบว่าสูตรอาหารมีอยู่จริง (Data Validation ข้ามบริการ)
-    const [recipes] = await pool.query("SELECT id FROM recipes WHERE id = ?", [id]);
+    const [recipes] = await pool.query("SELECT id FROM recipes WHERE id = ?", [
+      id,
+    ]);
     if (recipes.length === 0) {
       return res.status(404).json({ error: { message: "Recipe not found" } });
     }
@@ -270,7 +276,7 @@ app.post("/api/v1/recipes/:id/reviews", async (req, res) => {
       INSERT INTO reviews (recipe_id, reviewer_name, rating, comment)
       VALUES (?, ?, ?, ?)
     `,
-      [id, reviewer_name, rating, comment || null]
+      [id, reviewer_name, rating, comment || null],
     );
 
     res.status(201).json({

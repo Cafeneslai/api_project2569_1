@@ -1,280 +1,16 @@
 {
   "info": {
-    "name": "Recipe Information System",
+    "name": "Recipe Information System (Phase 3 Full Stack)",
+    "description": "Postman Collection ครบทั้ง 10 Endpoints สำหรับระบบข้อมูลสูตรอาหาร (Phase 1, 2, 3)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Get all recipes",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/v1/recipes",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "v1",
-            "recipes"
-          ]
-        }
-      },
-      "response": [
+      "name": "1. Categories",
+      "item": [
         {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/recipes",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "recipes"]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            { "key": "Content-Type", "value": "application/json" }
-          ],
-          "body": "{\n  \"message\": \"ดึงข้อมูลสูตรอาหารสำเร็จ\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"recipe_name\": \"Tom Yum Goong\",\n      \"category_name\": \"Soup\",\n      \"cook_time_minutes\": 30\n    }\n  ]\n}"
-        }
-      ]
-    },
-    {
-      "name": "Get recipe by ID",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/v1/recipes/1",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "v1",
-            "recipes",
-            "1"
-          ]
-        }
-      },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/recipes/1",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "recipes", "1"]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            { "key": "Content-Type", "value": "application/json" }
-          ],
-          "body": "{\n  \"message\": \"ดึงข้อมูลสูตรอาหารสำเร็จ\",\n  \"data\": {\n    \"id\": 1,\n    \"recipe_name\": \"Tom Yum Goong\",\n    \"category_name\": \"Soup\",\n    \"ingredients\": \"Shrimp, Lemongrass, Galangal, Chili...\",\n    \"cook_time_minutes\": 30\n  }\n}"
-        }
-      ]
-    },
-    {
-      "name": "Create a recipe",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Pad Thai\",\n  \"ingredients\": \"Noodles, Peanuts, Shrimp...\",\n  \"cook_time_minutes\": 20\n}"
-        },
-        "url": {
-          "raw": "http://localhost:3000/api/v1/recipes",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "v1",
-            "recipes"
-          ]
-        }
-      },
-      "response": [
-        {
-          "name": "Created",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Pad Thai\",\n  \"ingredients\": \"Noodles, Peanuts, Shrimp...\",\n  \"cook_time_minutes\": 20\n}"
-            },
-            "url": {
-              "raw": "http://localhost:3000/api/v1/recipes",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "recipes"]
-            }
-          },
-          "status": "Created",
-          "code": 201,
-          "_postman_previewlanguage": "json",
-          "header": [
-            { "key": "Content-Type", "value": "application/json" }
-          ],
-          "body": "{\n  \"message\": \"สร้างสูตรอาหารสำเร็จ\",\n  \"data\": {\n    \"id\": 2\n  }\n}"
-        }
-      ]
-    },
-    {
-      "name": "Update a recipe",
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Pad Thai with Chicken\",\n  \"ingredients\": \"Noodles, Peanuts, Chicken...\",\n  \"cook_time_minutes\": 25\n}"
-        },
-        "url": {
-          "raw": "http://localhost:3000/api/v1/recipes/2",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "v1",
-            "recipes",
-            "2"
-          ]
-        }
-      },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Pad Thai with Chicken\",\n  \"ingredients\": \"Noodles, Peanuts, Chicken...\",\n  \"cook_time_minutes\": 25\n}"
-            },
-            "url": {
-              "raw": "http://localhost:3000/api/v1/recipes/2",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "recipes", "2"]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            { "key": "Content-Type", "value": "application/json" }
-          ],
-          "body": "{\n  \"message\": \"อัปเดตสูตรอาหารสำเร็จ\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Delete a recipe",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/v1/recipes/2",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "v1",
-            "recipes",
-            "2"
-          ]
-        }
-      },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "http://localhost:3000/api/v1/recipes/2",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "recipes", "2"]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            { "key": "Content-Type", "value": "application/json" }
-          ],
-          "body": "{\n  \"message\": \"ลบสูตรอาหารสำเร็จ\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Get all categories",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:3000/api/v1/categories",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "3000",
-          "path": [
-            "api",
-            "v1",
-            "categories"
-          ]
-        }
-      },
-      "response": [
-        {
-          "name": "Success",
-          "originalRequest": {
+          "name": "Get all categories",
+          "request": {
             "method": "GET",
             "header": [],
             "url": {
@@ -285,13 +21,179 @@
               "path": ["api", "v1", "categories"]
             }
           },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "json",
-          "header": [
-            { "key": "Content-Type", "value": "application/json" }
-          ],
-          "body": "{\n  \"message\": \"ดึงข้อมูลหมวดหมู่สำเร็จ\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Soup\"\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Stir Fry\"\n    }\n  ]\n}"
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Recipes",
+      "item": [
+        {
+          "name": "Get all recipes (with search & filter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes?category_id=1&search=ต้ม",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes"],
+              "query": [
+                { "key": "category_id", "value": "1" },
+                { "key": "search", "value": "ต้ม" }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get recipe by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"แกงเขียวหวานไก่\",\n  \"category_id\": 1,\n  \"cook_time_minutes\": 35,\n  \"ingredients\": \"เนื้อไก่ 300g, พริกแกงเขียวหวาน 50g, กะทิ 250ml, มะเขือเปราะ\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update a recipe",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"แกงเขียวหวานไก่สูตรพิเศษ\",\n  \"category_id\": 1,\n  \"cook_time_minutes\": 40,\n  \"ingredients\": \"เนื้อไก่ 350g, พริกแกงเขียวหวาน 60g, กะทิ 300ml, ใบโหระพา\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes", "1"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a recipe",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes", "1"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Nutrition (External API Microservice)",
+      "item": [
+        {
+          "name": "Get recipe nutrition (with Retry, Timeout, Fallback)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes/1/nutrition",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes", "1", "nutrition"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Reviews & Rating",
+      "item": [
+        {
+          "name": "Get reviews for a recipe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes/1/reviews",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes", "1", "reviews"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add a review to recipe",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewer_name\": \"สมชาย สายกิน\",\n  \"rating\": 5,\n  \"comment\": \"รสชาติกลมกล่อม ทำตามสูตรง่ายมากครับ แนะนำเลย!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/recipes/1/reviews",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "recipes", "1", "reviews"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete a review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/v1/reviews/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "reviews", "1"]
+            }
+          },
+          "response": []
         }
       ]
     }
